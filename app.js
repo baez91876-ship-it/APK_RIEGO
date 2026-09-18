@@ -471,11 +471,6 @@ function renderView(view = "dashboard") {
       ),
     );
   document
-    .querySelectorAll('[data-action="complete-task"]')
-    .forEach((el) =>
-      el.addEventListener("click", () => completeTask(Number(el.dataset.id))),
-    );
-  document
     .querySelectorAll('[data-action="edit-user"]')
     .forEach((el) =>
       el.addEventListener("click", () => openUserModal(Number(el.dataset.id))),
@@ -805,7 +800,7 @@ function updateTeamView(view) {
     taskList.innerHTML = managedTasks
       .map(
         (task) =>
-          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span>${task.status !== "Completada" ? `<button class="edit-btn" data-action="complete-task" data-id="${task.id}" title="Marcar tarea completada">${icon("check")}</button>` : ""}<button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
+          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
       )
       .join("");
     return;
@@ -822,16 +817,6 @@ function updateTeamView(view) {
   );
 }
 
-// Marca una tarea como completada y propaga el cambio a las demás sesiones.
-function completeTask(id) {
-  const task = managedTasks.find((item) => item.id === id);
-  if (!task) return;
-  task.status = "Completada";
-  task.tone = "seed";
-  publishTeamState();
-  renderView(activeView === "team" ? "team" : "tasks");
-  showToast("Tarea completada y sincronizada");
-}
 // Actualiza la tabla de ventas y añade sus acciones de edición.
 function updateSalesView() {
   const action = viewContainer.querySelector(".page-heading .primary-btn");
