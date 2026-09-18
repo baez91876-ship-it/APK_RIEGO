@@ -438,9 +438,6 @@ function renderView(view = "dashboard") {
     .querySelectorAll('[data-action="toggle-connection"]')
     .forEach((el) => el.addEventListener("click", toggleConnection));
   document
-    .querySelectorAll('[data-action="logout"]')
-    .forEach((el) => el.addEventListener("click", logout));
-  document
     .querySelectorAll('[data-action="delete-user"]')
     .forEach((el) =>
       el.addEventListener("click", () =>
@@ -585,7 +582,6 @@ function renderView(view = "dashboard") {
     .forEach((item) =>
       item.classList.toggle("active", item.dataset.view === view),
     );
-  bindRoleControls();
   lucide.createIcons();
 }
 // Actualiza los indicadores del equipo en el resumen sin recargar la página.
@@ -1515,6 +1511,10 @@ document
 document
   .querySelector(".notification-btn")
   ?.addEventListener("click", () => renderView("alerts"));
+// El botón de cerrar sesión vive fuera de #view-container: se vincula una sola vez.
+document
+  .querySelectorAll('[data-action="logout"]')
+  .forEach((el) => el.addEventListener("click", logout));
 // Cierra el menú de perfil cuando se hace clic fuera de él.
 document.addEventListener("click", (event) => {
   const menu = document.querySelector("#role-switcher-menu");
