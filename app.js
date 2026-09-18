@@ -184,6 +184,7 @@ function receiveTeamState(state) {
   if (Array.isArray(state.calendar)) managedCalendarEvents = state.calendar;
   if (activeView === "dashboard") updateDashboardTeamSummary();
   if (activeView === "team" || activeView === "tasks") updateTeamView(activeView);
+  if (activeView === "alerts") renderView("alerts");
   if (activeView === "calendar") renderView("calendar");
   showToast("Equipo actualizado en tiempo real");
 }
@@ -471,12 +472,12 @@ function renderView(view = "dashboard") {
   document
     .querySelectorAll('[data-action="mark-alert"]')
     .forEach((el) =>
-      el.addEventListener("click", () => markAlertRead(Number(el.dataset.index))),
+      el.addEventListener("click", () => markAlertRead(el.dataset.alertId)),
     );
   document
     .querySelectorAll('[data-action="mark-alert-unread"]')
     .forEach((el) =>
-      el.addEventListener("click", () => markAlertUnread(Number(el.dataset.index))),
+      el.addEventListener("click", () => markAlertUnread(el.dataset.alertId)),
     );
   document
     .querySelectorAll("[data-alert-filter]")
@@ -509,6 +510,16 @@ function renderView(view = "dashboard") {
     .querySelectorAll('[data-action="edit-task"]')
     .forEach((el) =>
       el.addEventListener("click", () => editTask(Number(el.dataset.id))),
+    );
+  document
+    .querySelectorAll('[data-action="complete-task"]')
+    .forEach((el) =>
+      el.addEventListener("click", () => updateTaskStatus(Number(el.dataset.id), "Completada")),
+    );
+  document
+    .querySelectorAll('[data-action="pending-task"]')
+    .forEach((el) =>
+      el.addEventListener("click", () => updateTaskStatus(Number(el.dataset.id), "Pendiente")),
     );
   document
     .querySelectorAll('[data-action="edit-team"]')
@@ -726,9 +737,24 @@ function focusFirstField(modalId) {
   const field = document.querySelector(`#${modalId} input:not([type="hidden"]), #${modalId} select`);
   field?.focus();
 }
+// Oculta las alertas de tareas que ya fueron completadas.
+function removeCompletedTaskAlerts() {
+  viewContainer.querySelectorAll(".alert-row").forEach((row) => {
+    const isFertilizationAlert = row.textContent.includes("Aplicación de fertilizante pendiente");
+    const fertilizationTask = managedTasks.find((task) => task.id === 3);
+    if (isFertilizationAlert && fertilizationTask?.status === "Completada") row.remove();
+  });
+}
+
 // Calcula el estado visible de las alertas y enlaza sus acciones.
 function updateAlertsView() {
   const alertList = viewContainer.querySelector(".alert-list");
+  removeCompletedTaskAlerts();
+  liveAlerts = liveAlerts.filter(
+    (alert) =>
+      alert.category !== "Tarea" ||
+      managedTasks.find((task) => task.id === 3)?.status !== "Completada",
+  );
   liveAlerts.forEach((alert) => {
     if (alertList && !alertList.querySelector(`[data-live-alert-id="${alert.id}"]`)) {
       alertList.insertAdjacentHTML(
@@ -744,6 +770,13 @@ function updateAlertsView() {
     );
   }
   const rows = [...viewContainer.querySelectorAll(".alert-row")];
+  rows.forEach((row) => {
+    if (row.dataset.alertId) return;
+    const title = row.querySelector(".alert-copy strong")?.textContent?.trim();
+    row.dataset.alertId = row.dataset.liveAlertId
+      ? `live-${row.dataset.liveAlertId}`
+      : row.dataset.alertType || `static-${title}`;
+  });
   const markAllButton = viewContainer.querySelector(
     '[data-action="toast"].secondary-btn',
   );
@@ -751,25 +784,23 @@ function updateAlertsView() {
     markAllButton.dataset.action = "mark-all-alerts";
     markAllButton.innerHTML = `${icon("check-check")} Marcar todas como leídas`;
   }
-  rows.forEach((row, index) => {
+  rows.forEach((row) => {
     row.querySelector(".alert-actions")?.remove();
-    row.dataset.alertIndex = index;
-    row.classList.toggle("read", readAlerts.has(index));
+    const alertId = row.dataset.alertId;
+    row.classList.toggle("read", readAlerts.has(alertId));
     row.insertAdjacentHTML(
       "beforeend",
-      `<span class="alert-actions"><button class="alert-read-control" data-action="mark-alert" data-index="${index}" ${readAlerts.has(index) ? "disabled" : ""}>Marcar leída</button><button class="alert-read-control" data-action="mark-alert-unread" data-index="${index}" ${readAlerts.has(index) ? "" : "disabled"}>Marcar no leída</button></span>`,
+      `<span class="alert-actions"><button class="alert-read-control" data-action="mark-alert" data-alert-id="${alertId}" ${readAlerts.has(alertId) ? "disabled" : ""}>Marcar leída</button><button class="alert-read-control" data-action="mark-alert-unread" data-alert-id="${alertId}" ${readAlerts.has(alertId) ? "" : "disabled"}>Marcar no leída</button></span>`,
     );
   });
   updateAlertFilterLabels(rows);
-  updateNotificationState(rows.length);
+  updateNotificationState(rows);
   filterAlerts(alertFilter, alertSearch);
 }
 // Actualiza los contadores de alertas según su estado actual.
 function updateAlertFilterLabels(rows) {
   const total = rows.length;
-  const resolved = rows.filter((row) =>
-    readAlerts.has(Number(row.dataset.alertIndex)),
-  ).length;
+  const resolved = rows.filter((row) => readAlerts.has(row.dataset.alertId)).length;
   const active = total - resolved;
   const labels = {
     all: `Todas · ${total}`,
@@ -793,8 +824,7 @@ function filterAlerts(filter, searchTerm) {
     button.classList.toggle("active", button.dataset.alertFilter === selectedFilter);
   });
   viewContainer.querySelectorAll(".alert-row").forEach((row) => {
-    const index = Number(row.dataset.alertIndex);
-    const isResolved = readAlerts.has(index);
+    const isResolved = readAlerts.has(row.dataset.alertId);
     const matchesStatus =
       selectedFilter === "all" ||
       (selectedFilter === "active" && !isResolved) ||
@@ -804,8 +834,14 @@ function filterAlerts(filter, searchTerm) {
   });
 }
 // Sincroniza los indicadores de alertas no leídas en la navegación.
-function updateNotificationState(totalAlerts = 4) {
-  const unreadCount = Math.max(totalAlerts - readAlerts.size, 0);
+function updateNotificationState(rows = null) {
+  const currentRows = Array.isArray(rows)
+    ? rows
+    : [...viewContainer.querySelectorAll(".alert-row")];
+  const totalAlerts = currentRows.length || 4 + liveAlerts.length;
+  const unreadCount = currentRows.length
+    ? currentRows.filter((row) => !readAlerts.has(row.dataset.alertId)).length
+    : Math.max(totalAlerts - readAlerts.size, 0);
   document.querySelectorAll(".notification-btn em").forEach((indicator) => {
     indicator.hidden = unreadCount === 0;
   });
@@ -844,9 +880,9 @@ function receiveLiveAlert() {
     },
   ];
   const alert = { ...alerts[liveAlertSequence % alerts.length], id: ++liveAlertSequence };
+  if (alert.category === "Tarea" && managedTasks.find((task) => task.id === 3)?.status === "Completada") return;
   liveAlerts.unshift(alert);
-  const alertCount = 5 + liveAlerts.length;
-  updateNotificationState(alertCount);
+  updateNotificationState();
   if (!document.querySelector(".app-shell")?.classList.contains("app-hidden")) {
     if (document.querySelector("#breadcrumb-title")?.textContent === "Alertas") {
       renderView("alerts");
@@ -914,7 +950,7 @@ function updateTeamView(view) {
     taskList.innerHTML = managedTasks
       .map(
         (task) =>
-          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
+          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span class="task-actions"><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="task-status-btn task-complete-btn${task.status === "Completada" ? " selected" : ""}" data-action="complete-task" data-id="${task.id}" title="Completar tarea" aria-label="Completar tarea">${icon("check")}</button><button class="task-status-btn task-pending-btn${task.status === "Pendiente" ? " selected" : ""}" data-action="pending-task" data-id="${task.id}" title="Devolver a pendiente" aria-label="Devolver a pendiente">${icon("x")}</button><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
       )
       .join("");
     return;
@@ -925,7 +961,7 @@ function updateTeamView(view) {
     managedTasks
     .map(
       (task) =>
-        `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
+        `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span class="task-actions"><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="task-status-btn task-complete-btn${task.status === "Completada" ? " selected" : ""}" data-action="complete-task" data-id="${task.id}" title="Completar tarea" aria-label="Completar tarea">${icon("check")}</button><button class="task-status-btn task-pending-btn${task.status === "Pendiente" ? " selected" : ""}" data-action="pending-task" data-id="${task.id}" title="Devolver a pendiente" aria-label="Devolver a pendiente">${icon("x")}</button><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
     )
     .join(""),
   );
@@ -984,6 +1020,18 @@ function editWarehouse(id) {
 // Abre el editor de una tarea seleccionada.
 function editTask(id) {
   openRecordEditModal("tasks", id);
+}
+
+// Cambia rápidamente el estado de una tarea desde su fila.
+function updateTaskStatus(id, status) {
+  const task = managedTasks.find((item) => item.id === id);
+  if (!task || task.status === status) return;
+  task.status = status;
+  task.tone = status === "Completada" ? "seed" : "harvest";
+  publishTeamState();
+  updateDashboardTeamSummary();
+  renderView(activeView === "team" || activeView === "tasks" ? activeView : "tasks");
+  showToast(status === "Completada" ? "Tarea completada" : "Tarea pendiente nuevamente");
 }
 // Abre el editor de un integrante del equipo.
 function editTeamMember(id) {
@@ -1114,20 +1162,22 @@ function deleteEditableRecord(type, id) {
   showToast("Registro eliminado");
 }
 // Mantiene la lectura de alertas en memoria durante la sesión.
-function markAlertRead(index) {
-  readAlerts.add(index);
+function markAlertRead(alertId) {
+  readAlerts.add(alertId);
   renderView("alerts");
   showToast("Alerta marcada como leída");
 }
 // Devuelve una alerta al estado no leído.
-function markAlertUnread(index) {
-  readAlerts.delete(index);
+function markAlertUnread(alertId) {
+  readAlerts.delete(alertId);
   renderView("alerts");
   showToast("Alerta marcada como no leída");
 }
 // Marca todas las alertas visibles como atendidas.
 function markAllAlertsRead() {
-  document.querySelectorAll(".alert-row").forEach((_, index) => readAlerts.add(index));
+  document
+    .querySelectorAll(".alert-row")
+    .forEach((row) => readAlerts.add(row.dataset.alertId));
   renderView("alerts");
   showToast("Todas las alertas fueron marcadas como leídas");
 }

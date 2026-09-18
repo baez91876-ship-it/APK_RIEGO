@@ -1398,9 +1398,54 @@ svg {
   font-weight: 700;
 }
 .edit-btn:focus-visible,
-.delete-btn:focus-visible {
+.delete-btn:focus-visible,
+.task-status-btn:focus-visible {
   outline: 2px solid var(--green-2);
   outline-offset: 2px;
+}
+.task-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.task-status-btn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  background: var(--surface);
+}
+.task-status-btn:hover {
+  transform: translateY(-1px);
+}
+.task-complete-btn:hover {
+  color: #ffffff;
+  background: var(--green);
+  border-color: var(--green);
+}
+.task-complete-btn.selected {
+  color: #ffffff;
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(66, 187, 105, 0.18);
+}
+.task-pending-btn:hover {
+  color: #ffffff;
+  background: var(--red);
+  border-color: var(--red);
+}
+.task-pending-btn.selected {
+  color: #ffffff;
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(223, 92, 77, 0.18);
+}
+.task-status-btn svg {
+  width: 14px;
+  height: 14px;
 }
 .tab.active:after {
   content: "";
