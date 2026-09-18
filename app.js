@@ -145,6 +145,12 @@ let managedAudits = [
   { id: 3, user: "AgroSmart", action: "Sincronizó datos de sensores", date: "Ayer, 18:20" },
   { id: 4, user: "Mariana Ríos", action: "Creó una nueva tarea", date: "Ayer, 14:10" },
 ];
+let managedCalendarEvents = [
+  { id: 1, day: 4, label: "Riego · Norte", tone: "sowing" },
+  { id: 2, day: 9, label: "Fertilizar", tone: "growing" },
+  { id: 3, day: 15, label: "Cosecha", tone: "harvest" },
+  { id: 4, day: 22, label: "Inspección", tone: "growing" },
+];
 
 // Recupera equipo y tareas compartidos entre pestañas del mismo dispositivo.
 function loadTeamState() {
@@ -152,6 +158,7 @@ function loadTeamState() {
     const savedState = JSON.parse(localStorage.getItem(teamStateKey));
     if (Array.isArray(savedState?.team)) managedTeam = savedState.team;
     if (Array.isArray(savedState?.tasks)) managedTasks = savedState.tasks;
+    if (Array.isArray(savedState?.calendar)) managedCalendarEvents = savedState.calendar;
   } catch {
     localStorage.removeItem(teamStateKey);
   }
@@ -159,7 +166,12 @@ function loadTeamState() {
 
 // Publica cambios inmediatamente y conserva una copia local para el respaldo.
 function publishTeamState() {
-  const state = { team: managedTeam, tasks: managedTasks, source: teamClientId };
+  const state = {
+    team: managedTeam,
+    tasks: managedTasks,
+    calendar: managedCalendarEvents,
+    source: teamClientId,
+  };
   localStorage.setItem(teamStateKey, JSON.stringify(state));
   realtimeChannel?.postMessage({ type: "team-state", ...state });
 }
@@ -169,8 +181,10 @@ function receiveTeamState(state) {
   if (!state || state.source === teamClientId) return;
   if (Array.isArray(state.team)) managedTeam = state.team;
   if (Array.isArray(state.tasks)) managedTasks = state.tasks;
+  if (Array.isArray(state.calendar)) managedCalendarEvents = state.calendar;
   if (activeView === "dashboard") updateDashboardTeamSummary();
   if (activeView === "team" || activeView === "tasks") updateTeamView(activeView);
+  if (activeView === "calendar") renderView("calendar");
   showToast("Equipo actualizado en tiempo real");
 }
 
@@ -255,22 +269,16 @@ const views = {
   calendar: {
     title: "Calendario",
     render: () =>
-      `<div class="page"><div class="page-heading"><div><p class="eyebrow">Planificación de finca</p><h1>Calendario agrícola</h1><p class="page-subtitle">Septiembre 2024 · 18 actividades programadas</p></div><button class="primary-btn" data-action="toast">${icon("plus")} Nueva actividad</button></div>${surface(
+      `<div class="page"><div class="page-heading"><div><p class="eyebrow">Planificación de finca</p><h1>Calendario agrícola</h1><p class="page-subtitle">Septiembre 2024 · ${managedCalendarEvents.length} actividades programadas</p></div><button class="primary-btn" data-action="new-calendar-event">${icon("plus")} Nueva actividad</button></div>${surface(
         "Septiembre 2024",
         `<div class="calendar-grid"><div class="day-name">LUN</div><div class="day-name">MAR</div><div class="day-name">MIÉ</div><div class="day-name">JUE</div><div class="day-name">VIE</div><div class="day-name">SÁB</div><div class="day-name">DOM</div>${Array.from(
           { length: 35 },
           (_, i) => {
             const n = i - 1;
-            const event =
-              n === 4
-                ? '<div class="event sowing">Riego · Norte</div>'
-                : n === 9
-                  ? '<div class="event growing">Fertilizar</div>'
-                  : n === 15
-                    ? '<div class="event harvest">Cosecha</div>'
-                    : n === 22
-                      ? '<div class="event growing">Inspección</div>'
-                      : "";
+            const event = managedCalendarEvents
+              .filter((item) => item.day === n)
+              .map((item) => `<div class="event ${item.tone}">${item.label}</div>`)
+              .join("");
             return `<div class="day ${n < 1 ? "muted" : ""} ${n === 24 ? "today" : ""}"><span class="day-number">${n < 1 ? 30 + i : n > 30 ? n - 30 : n}</span>${event}</div>`;
           },
         ).join("")}</div>`,
@@ -365,6 +373,9 @@ function renderView(view = "dashboard") {
   document
     .querySelectorAll('[data-action="toast"]')
     .forEach((el) => el.addEventListener("click", () => showToast()));
+  document
+    .querySelectorAll('[data-action="new-calendar-event"]')
+    .forEach((el) => el.addEventListener("click", addCalendarEvent));
   document
     .querySelectorAll('[data-action="export-dashboard"]')
     .forEach((el) => el.addEventListener("click", exportDashboard));
@@ -526,6 +537,26 @@ function updateDashboardTeamSummary() {
   if (activeLabel) activeLabel.textContent = `${String(activeCount).padStart(2, "0")} / ${managedTeam.length}`;
   if (tasksLabel) tasksLabel.textContent = `${completedCount} / ${managedTasks.length}`;
   if (unassignedLabel) unassignedLabel.textContent = String(unassignedCount).padStart(2, "0");
+}
+
+// Agrega una actividad de demostración y la comparte con las demás sesiones.
+function addCalendarEvent() {
+  const nextDay = [6, 12, 18, 25].find(
+    (day) => !managedCalendarEvents.some((event) => event.day === day),
+  );
+  if (!nextDay) {
+    showToast("No hay más fechas disponibles este mes");
+    return;
+  }
+  managedCalendarEvents.push({
+    id: Date.now(),
+    day: nextDay,
+    label: "Nueva actividad",
+    tone: "growing",
+  });
+  publishTeamState();
+  renderView("calendar");
+  showToast("Actividad sincronizada en tiempo real");
 }
 // Conecta filtros y pestañas de la pantalla de cultivos.
 function bindCropTabs() {
