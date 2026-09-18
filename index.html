@@ -307,6 +307,33 @@
         <form id="record-edit-form"></form>
       </div>
     </div>
+    <!-- Modal para registrar una actividad en una fecha específica. -->
+    <div class="modal-backdrop" id="calendar-modal" aria-hidden="true">
+      <div class="user-modal">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">PLANIFICACIÓN AGRÍCOLA</p>
+            <h2>Nueva actividad</h2>
+          </div>
+          <button class="modal-close" data-action="close-calendar-modal" title="Cerrar">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="calendar-form">
+          <label class="modal-field">Actividad<input id="calendar-label-input" required placeholder="Ej. Revisar riego" /></label>
+          <label class="modal-field">Fecha<input id="calendar-date-input" type="date" required /></label>
+          <label class="modal-field">Tipo<select id="calendar-tone-input" required>
+            <option value="growing">Operación</option>
+            <option value="sowing">Riego / siembra</option>
+            <option value="harvest">Cosecha</option>
+          </select></label>
+          <div class="modal-actions">
+            <button type="button" class="secondary-btn" data-action="close-calendar-modal">Cancelar</button>
+            <button type="submit" class="primary-btn">Guardar actividad</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <!-- Lucide transforma los placeholders data-lucide en iconos SVG. -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="app.js"></script>

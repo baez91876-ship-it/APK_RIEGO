@@ -246,7 +246,14 @@ function renderCalendarGrid() {
         ? dayNumber - daysInMonth
         : dayNumber;
     const eventMarkup = managedCalendarEvents
-      .filter((event) => event.day === dayNumber && !isPreviousMonth && !isNextMonth)
+      .filter(
+        (event) =>
+          event.day === dayNumber &&
+          (event.year === undefined || event.year === year) &&
+          (event.month === undefined || event.month === month) &&
+          !isPreviousMonth &&
+          !isNextMonth,
+      )
       .map((event) => `<div class="event ${event.tone}">${event.label}</div>`)
       .join("");
     const classes = [
@@ -411,7 +418,7 @@ function renderView(view = "dashboard") {
     .forEach((el) => el.addEventListener("click", () => showToast()));
   document
     .querySelectorAll('[data-action="new-calendar-event"]')
-    .forEach((el) => el.addEventListener("click", addCalendarEvent));
+    .forEach((el) => el.addEventListener("click", openCalendarModal));
   document
     .querySelectorAll('[data-action="export-dashboard"]')
     .forEach((el) => el.addEventListener("click", exportDashboard));
@@ -575,22 +582,43 @@ function updateDashboardTeamSummary() {
   if (unassignedLabel) unassignedLabel.textContent = String(unassignedCount).padStart(2, "0");
 }
 
-// Agrega una actividad de demostración y la comparte con las demás sesiones.
-function addCalendarEvent() {
-  const nextDay = [6, 12, 18, 25].find(
-    (day) => !managedCalendarEvents.some((event) => event.day === day),
-  );
-  if (!nextDay) {
-    showToast("No hay más fechas disponibles este mes");
-    return;
-  }
+// Abre el formulario con la fecha actual como valor inicial.
+function openCalendarModal() {
+  const today = new Date();
+  const date = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+  document.querySelector("#calendar-form").reset();
+  document.querySelector("#calendar-date-input").value = date;
+  const modal = document.querySelector("#calendar-modal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  lucide.createIcons();
+  focusFirstField("calendar-modal");
+}
+
+// Cierra el formulario de actividades y restaura su estado accesible.
+function closeCalendarModal() {
+  const modal = document.querySelector("#calendar-modal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+// Guarda una actividad, la coloca en la fecha elegida y la sincroniza.
+function saveCalendarEvent(event) {
+  event.preventDefault();
+  const dateValue = document.querySelector("#calendar-date-input").value;
+  const selectedDate = new Date(`${dateValue}T00:00:00`);
   managedCalendarEvents.push({
     id: Date.now(),
-    day: nextDay,
-    label: "Nueva actividad",
-    tone: "growing",
+    day: selectedDate.getDate(),
+    month: selectedDate.getMonth(),
+    year: selectedDate.getFullYear(),
+    label: document.querySelector("#calendar-label-input").value.trim(),
+    tone: document.querySelector("#calendar-tone-input").value,
   });
   publishTeamState();
+  closeCalendarModal();
   renderView("calendar");
   showToast("Actividad sincronizada en tiempo real");
 }
@@ -1214,6 +1242,18 @@ function bindHarvestModalControls() {
     if (event.target.id === "harvest-modal") closeHarvestModal();
   });
 }
+// Vincula el formulario para programar actividades en fechas específicas.
+function bindCalendarModalControls() {
+  document
+    .querySelectorAll('[data-action="close-calendar-modal"]')
+    .forEach((button) => button.addEventListener("click", closeCalendarModal));
+  document
+    .querySelector("#calendar-form")
+    .addEventListener("submit", saveCalendarEvent);
+  document.querySelector("#calendar-modal").addEventListener("click", (event) => {
+    if (event.target.id === "calendar-modal") closeCalendarModal();
+  });
+}
 // Vincula el formulario genérico usado por los registros operativos.
 function bindRecordEditControls() {
   document
@@ -1425,6 +1465,7 @@ updateUserChrome(initialProfile);
 bindRoleControls();
 bindUserModalControls();
 bindHarvestModalControls();
+bindCalendarModalControls();
 bindRecordEditControls();
 renderView(initialProfile.home);
 updateNotificationState();
