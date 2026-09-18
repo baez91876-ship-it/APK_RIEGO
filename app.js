@@ -85,6 +85,7 @@ let managedCrops = [
     stage: "Cuajado",
   },
 ];
+// Cosechas registradas desde la operación de la finca.
 let managedHarvests = [
   {
     id: 1,
@@ -103,30 +104,36 @@ let managedHarvests = [
     quality: "Exportación",
   },
 ];
+// Existencias de insumos mostradas en las vistas de bodega.
 let managedInventory = [
   { id: 1, name: "Fertilizante NPK 15-15-15", category: "Fertilizantes", stock: "124 kg", status: "En stock", updated: "Hoy, 08:10" },
   { id: 2, name: "Biofungicida Trichoderma", category: "Protección", stock: "18 L", status: "Sin stock", updated: "Ayer" },
   { id: 3, name: "Combustible maquinaria", category: "Operación", stock: "240 L", status: "En stock", updated: "20 Sep" },
 ];
+// Tareas operativas que pueden asignarse y cambiar de estado.
 let managedTasks = [
   { id: 1, text: "Riego Lote Norte 03", person: "Carlos Méndez", status: "Pendiente", icon: "circle", tone: "harvest" },
   { id: 2, text: "Inspección de plagas", person: "Andrea Ruiz", status: "Pendiente", icon: "circle", tone: "harvest" },
   { id: 3, text: "Aplicar fertilizante", person: "Luis Gómez", status: "Pendiente", icon: "circle", tone: "harvest" },
 ];
+// Bodegas disponibles y responsables de cada ubicación.
 let managedWarehouses = [
   { id: 1, name: "Bodega principal", location: "Finca El Porvenir", responsible: "Mariana Ríos", status: "Operativa" },
   { id: 2, name: "Almacén de herramientas", location: "Lote Norte 03", responsible: "Carlos Méndez", status: "Operativa" },
 ];
+// Personas que participan en las actividades de campo.
 let managedTeam = [
   { id: 1, name: "Carlos Méndez", role: "Supervisor de campo", phone: "300 555 0142" },
   { id: 2, name: "Andrea Ruiz", role: "Técnica agrícola", phone: "300 555 0186" },
   { id: 3, name: "Luis Gómez", role: "Operario de cultivo", phone: "300 555 0129" },
 ];
+// Ventas registradas para el seguimiento comercial.
 let managedSales = [
   { id: 1, date: "20 Sep", buyer: "Cooperativa Andina", product: "Café arábica", quantity: "680 kg", total: "$9.2M", status: "Pagada" },
   { id: 2, date: "12 Sep", buyer: "Frutas del Valle", product: "Aguacate Hass", quantity: "1.2 t", total: "$7.8M", status: "Despachada" },
   { id: 3, date: "05 Sep", buyer: "Mercado Central", product: "Tomate chonto", quantity: "420 kg", total: "$1.4M", status: "Pendiente" },
 ];
+// Historial local de cambios y acciones relevantes.
 let managedAudits = [
   { id: 1, user: "Mariana Ríos", action: "Actualizó el lote Norte 03", date: "Hoy, 09:32" },
   { id: 2, user: "Carlos Méndez", action: "Registró actividad de riego", date: "Hoy, 06:42" },
@@ -504,6 +511,7 @@ function downloadCsv(filename, rows) {
   link.click();
   URL.revokeObjectURL(url);
 }
+// Descarga el resumen principal en formato CSV.
 function exportDashboard() {
   downloadCsv("agrosmart-resumen.csv", [
     ["Indicador", "Valor", "Detalle"],
@@ -513,6 +521,7 @@ function exportDashboard() {
   ]);
   showToast("Resumen exportado correctamente");
 }
+// Descarga el historial de auditoría en formato CSV.
 function exportAudit() {
   downloadCsv("agrosmart-auditoria.csv", [
     ["Usuario", "Actividad", "Fecha"],
@@ -523,6 +532,7 @@ function exportAudit() {
   ]);
   showToast("Registro exportado correctamente");
 }
+// Permite cerrar cualquier modal abierto con la tecla Escape.
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   document.querySelectorAll(".modal-backdrop.open").forEach((modal) => {
@@ -571,6 +581,7 @@ function updateAlertsView() {
   updateNotificationState(rows.length);
   filterAlerts(alertFilter, alertSearch);
 }
+// Actualiza los contadores de alertas según su estado actual.
 function updateAlertFilterLabels(rows) {
   const total = rows.length;
   const resolved = rows.filter((row) =>
@@ -587,6 +598,7 @@ function updateAlertFilterLabels(rows) {
     if (label) button.textContent = label;
   });
 }
+// Filtra alertas por estado y por texto introducido en el buscador.
 function filterAlerts(filter, searchTerm) {
   if (filter) alertFilter = filter;
   if (searchTerm !== undefined) alertSearch = searchTerm.trim();
@@ -608,6 +620,7 @@ function filterAlerts(filter, searchTerm) {
     row.hidden = !matchesStatus || !matchesSearch;
   });
 }
+// Sincroniza los indicadores de alertas no leídas en la navegación.
 function updateNotificationState(totalAlerts = 4) {
   const unreadCount = Math.max(totalAlerts - readAlerts.size, 0);
   document.querySelectorAll(".notification-btn em").forEach((indicator) => {
@@ -618,6 +631,7 @@ function updateNotificationState(totalAlerts = 4) {
     counter.hidden = unreadCount === 0;
   });
 }
+// Simula la recepción periódica de avisos desde sensores de la finca.
 function receiveLiveAlert() {
   if (!localStorage.getItem("agrosmart-role")) return;
   const alerts = [
@@ -730,6 +744,7 @@ function updateTeamView(view) {
     .join(""),
   );
 }
+// Actualiza la tabla de ventas y añade sus acciones de edición.
 function updateSalesView() {
   const action = viewContainer.querySelector(".page-heading .primary-btn");
   const header = viewContainer.querySelector(".data-table thead tr");
@@ -749,6 +764,7 @@ function updateSalesView() {
     )
     .join("");
 }
+// Renderiza el historial de auditoría con sus acciones disponibles.
 function updateAuditView() {
   const heading = viewContainer.querySelector(".page-heading");
   const surfaceElement = viewContainer.querySelector(".surface");
@@ -770,15 +786,19 @@ function updateAuditView() {
       .join(""),
   );
 }
+// Abre el editor de un insumo seleccionado.
 function editInventoryItem(id) {
   openRecordEditModal("supplies", id);
 }
+// Abre el editor de una bodega seleccionada.
 function editWarehouse(id) {
   openRecordEditModal("warehouse", id);
 }
+// Abre el editor de una tarea seleccionada.
 function editTask(id) {
   openRecordEditModal("tasks", id);
 }
+// Abre el editor de un integrante del equipo.
 function editTeamMember(id) {
   openRecordEditModal("team", id);
 }
@@ -846,6 +866,7 @@ function openRecordEditModal(type, id = null) {
   lucide.createIcons();
   focusFirstField("record-edit-modal");
 }
+// Cierra el modal genérico de edición.
 function closeRecordEditModal() {
   const modal = document.querySelector("#record-edit-modal");
   modal.classList.remove("open");
@@ -883,6 +904,7 @@ function saveRecordEdit(event) {
   renderView(view);
   showToast(record ? "Cambios guardados" : "Registro creado");
 }
+// Elimina un registro operativo después de pedir confirmación.
 function deleteEditableRecord(type, id) {
   const collections = {
     warehouse: managedWarehouses,
@@ -908,16 +930,19 @@ function markAlertRead(index) {
   renderView("alerts");
   showToast("Alerta marcada como leída");
 }
+// Devuelve una alerta al estado no leído.
 function markAlertUnread(index) {
   readAlerts.delete(index);
   renderView("alerts");
   showToast("Alerta marcada como no leída");
 }
+// Marca todas las alertas visibles como atendidas.
 function markAllAlertsRead() {
   document.querySelectorAll(".alert-row").forEach((_, index) => readAlerts.add(index));
   renderView("alerts");
   showToast("Todas las alertas fueron marcadas como leídas");
 }
+// Adapta la vista de cosecha a los registros almacenados localmente.
 function updateHarvestView() {
   const action = viewContainer.querySelector('[data-action="toast"]');
   const body = viewContainer.querySelector(".data-table tbody");
@@ -954,11 +979,13 @@ function openHarvestModal() {
   lucide.createIcons();
   focusFirstField("harvest-modal");
 }
+// Oculta el modal de registro de cosechas.
 function closeHarvestModal() {
   const modal = document.querySelector("#harvest-modal");
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
 }
+// Valida y agrega una cosecha al conjunto de datos local.
 function saveHarvest(event) {
   event.preventDefault();
   const dateValue = document.querySelector("#harvest-date-input").value;
@@ -978,6 +1005,7 @@ function saveHarvest(event) {
   renderView("harvest");
   showToast("Cosecha registrada");
 }
+// Elimina una cosecha después de solicitar confirmación.
 function deleteManagedHarvest(id) {
   const harvest = managedHarvests.find((item) => item.id === id);
   if (!harvest || !confirm(`¿Eliminar la cosecha de ${harvest.crop}?`)) return;
@@ -985,6 +1013,7 @@ function deleteManagedHarvest(id) {
   renderView("harvest");
   showToast("Cosecha eliminada");
 }
+// Cambia la simulación visual entre conexión y modo offline.
 function toggleConnection() {
   const button = document.querySelector(".connection-btn");
   const dot = button.querySelector(".status-dot");
@@ -1014,9 +1043,11 @@ function bindRoleControls() {
       option.addEventListener("click", () => switchRole(option.dataset.role)),
     );
 }
+// Define si el perfil actual tiene permisos de administración global.
 function canManageUsers() {
   return activeRole === "superAdmin";
 }
+// Vincula los botones y el formulario del modal de usuarios.
 function bindUserModalControls() {
   document
     .querySelectorAll('[data-action="close-user-modal"]')
@@ -1029,6 +1060,7 @@ function bindUserModalControls() {
     if (event.target.id === "user-modal") closeUserModal();
   });
 }
+// Vincula los botones y el formulario del modal de cosechas.
 function bindHarvestModalControls() {
   document
     .querySelectorAll('[data-action="close-harvest-modal"]')
@@ -1040,6 +1072,7 @@ function bindHarvestModalControls() {
     if (event.target.id === "harvest-modal") closeHarvestModal();
   });
 }
+// Vincula el formulario genérico usado por los registros operativos.
 function bindRecordEditControls() {
   document
     .querySelectorAll('[data-action="close-record-edit"]')
@@ -1051,6 +1084,7 @@ function bindRecordEditControls() {
     if (event.target.id === "record-edit-modal") closeRecordEditModal();
   });
 }
+// Alterna la visibilidad de la contraseña en el formulario de usuario.
 function togglePasswordVisibility() {
   const input = document.querySelector("#user-password-input");
   const button = document.querySelector('[data-action="toggle-password"]');
@@ -1060,6 +1094,7 @@ function togglePasswordVisibility() {
   button.innerHTML = `<i data-lucide="${visible ? "eye" : "eye-off"}"></i>`;
   lucide.createIcons();
 }
+// Convierte la clave interna de un rol en su etiqueta visible.
 function roleLabel(role) {
   return role === "superAdmin"
     ? "SuperAdmin"
@@ -1088,6 +1123,7 @@ function openUserModal(id = null) {
   lucide.createIcons();
   focusFirstField("user-modal");
 }
+// Cierra el modal de usuarios y restaura su estado accesible.
 function closeUserModal() {
   const modal = document.querySelector("#user-modal");
   modal.classList.remove("open");
@@ -1128,6 +1164,7 @@ function saveUser(event) {
   renderView("users-management");
   showToast(editingId ? "Usuario actualizado" : "Usuario creado");
 }
+// Recupera la pantalla de administración activa para volver a ella.
 function returnToManagementView() {
   return (
     document.querySelector(".nav-item.active")?.dataset.view || "management"
@@ -1141,6 +1178,7 @@ function deleteManagedUser(id) {
   renderView(returnToManagementView());
   showToast("Usuario eliminado");
 }
+// Elimina un cultivo del catálogo después de pedir confirmación.
 function deleteManagedCrop(id) {
   const crop = managedCrops.find((item) => item.id === id);
   if (!crop || !confirm(`¿Eliminar el cultivo ${crop.name}?`)) return;
@@ -1183,6 +1221,7 @@ function logout() {
   localStorage.removeItem("agrosmart-role");
   window.location.href = "login.html";
 }
+// Abre o cierra el menú de cambio de perfil.
 function toggleRoleMenu() {
   const menu = document.querySelector("#role-switcher-menu");
   menu.classList.toggle("open");
@@ -1224,6 +1263,7 @@ document
 document
   .querySelector(".notification-btn")
   ?.addEventListener("click", () => renderView("alerts"));
+// Cierra el menú de perfil cuando se hace clic fuera de él.
 document.addEventListener("click", (event) => {
   const menu = document.querySelector("#role-switcher-menu");
   if (

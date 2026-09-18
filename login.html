@@ -16,11 +16,13 @@
   <body>
     <!-- Acceso independiente para poder abrir la aplicación directamente. -->
     <main class="auth-screen" id="auth-screen" data-screen="login">
+      <!-- Identidad visual de la pantalla de acceso. -->
       <div class="auth-brand">
         <span class="brand-mark"><i data-lucide="sprout"></i></span>
         <span>agro<span class="brand-accent">smart</span></span>
       </div>
       <div class="auth-layout">
+        <!-- Mensaje de producto y beneficios del modo offline. -->
         <section class="auth-intro">
           <p class="eyebrow">GESTIÓN AGROPECUARIA INTEGRAL</p>
           <h1>Tecnología para<br /><span>el campo colombiano</span></h1>
@@ -50,6 +52,7 @@
           <p class="eyebrow">AGROSMART</p>
           <h2>Bienvenido de nuevo</h2>
           <p class="auth-description">Seleccione su rol e ingrese sus credenciales</p>
+          <!-- Selección del perfil que se enviará a la aplicación. -->
           <div class="auth-role-label">ROL DE ACCESO</div>
           <div class="auth-role-list">
             <button type="button" class="auth-role active" data-auth-role="admin">
@@ -68,6 +71,7 @@
               <i data-lucide="hard-hat"></i>
             </button>
           </div>
+          <!-- Credenciales del usuario local. -->
           <label class="auth-field">CORREO ELECTRÓNICO<input type="email" autocomplete="email" placeholder="tu@finca.com" /></label>
           <label class="auth-field">CONTRASEÑA<input type="password" autocomplete="current-password" placeholder="••••••••" /></label>
           <button type="button" class="primary-btn auth-submit" data-action="login">

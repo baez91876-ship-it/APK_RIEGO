@@ -29,6 +29,7 @@ body.dark {
   --green-2: #72db91;
   --shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
+/* Ajustes de contraste para el contenedor de la aplicación. */
 body.dark .app-shell {
   color: var(--ink);
 }
@@ -46,6 +47,7 @@ body.dark .stage.harvest *,
 body.dark .stage.develop * {
   color: inherit;
 }
+/* Superficies y controles principales en modo oscuro. */
 body.dark .topbar {
   background: rgba(20, 37, 32, 0.85);
   border-color: var(--line);
@@ -122,6 +124,7 @@ body.dark .role-badge {
   background: #21452d;
   color: #ccefd2;
 }
+/* Tablas, filas y estados de datos en modo oscuro. */
 body.dark .data-table th {
   background: #1a2b24;
   color: #a9c0af;
@@ -198,6 +201,7 @@ body.dark .alert-read-control[data-action="mark-alert-unread"] {
   background: #402522;
   color: #ffd4ce;
 }
+/* Componentes de autenticación en modo oscuro. */
 body.dark .auth-card {
   background: rgba(18, 35, 28, 0.96);
   color: var(--ink);
@@ -340,6 +344,7 @@ svg {
   bottom: -110px;
   right: -110px;
 }
+/* Marca, selector de finca y navegación lateral. */
 .brand {
   font-weight: 800;
   font-size: 21px;
@@ -547,6 +552,7 @@ svg {
   flex: 1;
   min-width: 0;
 }
+/* Barra superior, breadcrumb y acciones globales. */
 .topbar {
   height: 71px;
   border-bottom: 1px solid var(--line);
@@ -641,6 +647,7 @@ svg {
   width: 32px;
   height: 32px;
 }
+/* Encabezados, botones, indicadores y grillas de contenido. */
 .page {
   max-width: 1380px;
   padding: 34px 38px 60px;
@@ -772,6 +779,7 @@ svg {
   grid-template-columns: minmax(0, 1.32fr) minmax(300px, 0.68fr);
   gap: 20px;
 }
+/* Paneles, tablas y filas reutilizables de la aplicación. */
 .surface {
   background: var(--surface);
   border: 1px solid rgba(225, 235, 227, 0.9);
@@ -800,6 +808,7 @@ svg {
   font-size: 10px;
   color: var(--muted);
 }
+/* Alertas, estados de lectura y eventos en tiempo real. */
 .alert-list {
   padding: 0 10px 10px;
 }
@@ -1290,6 +1299,7 @@ svg {
   left: 0;
   right: 0;
 }
+/* Vista simulada para trabajadores de campo en móvil. */
 .mobile-preview {
   min-height: 660px;
   background: radial-gradient(circle at 60% 15%, #224c34, #0d1f16 60%);

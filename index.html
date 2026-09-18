@@ -33,10 +33,12 @@
       data-screen="login"
       aria-hidden="false"
     >
+      <!-- Marca y presentación inicial del producto. -->
       <div class="auth-brand">
         <span class="brand-mark"><i data-lucide="sprout"></i></span
         ><span>agro<span class="brand-accent">smart</span></span>
       </div>
+      <!-- Layout de autenticación mostrado antes de iniciar sesión. -->
       <div class="auth-layout">
         <div class="auth-intro">
           <p class="eyebrow">GESTIÓN AGROPECUARIA INTEGRAL</p>
@@ -119,6 +121,7 @@
       data-screen="app"
       aria-hidden="true"
     >
+      <!-- Navegación lateral con módulos disponibles por rol. -->
       <aside class="sidebar">
         <div class="brand">
           <span class="brand-mark"><i data-lucide="sprout"></i></span
@@ -205,6 +208,7 @@
           </button>
         </div>
       </aside>
+      <!-- Contenido principal y barra superior de la aplicación. -->
       <main class="main-content">
         <header class="topbar">
           <div class="breadcrumb">
@@ -234,6 +238,7 @@
             </button>
           </div>
         </header>
+        <!-- Menú contextual para cambiar el usuario activo localmente. -->
         <div
           class="role-switcher-menu"
           id="role-switcher-menu"
@@ -271,10 +276,12 @@
         <div id="view-container"></div>
       </main>
     </div>
+    <!-- Confirmación reutilizable para operaciones guardadas localmente. -->
     <div class="toast" id="toast">
       <i data-lucide="check-circle-2"></i
       ><span>Actividad guardada localmente</span>
     </div>
+    <!-- Modal para crear y editar usuarios. -->
     <div class="modal-backdrop" id="user-modal" aria-hidden="true">
       <div class="user-modal">
         <div class="modal-heading">
@@ -343,6 +350,7 @@
         </form>
       </div>
     </div>
+    <!-- Modal para registrar cosechas. -->
     <div class="modal-backdrop" id="harvest-modal" aria-hidden="true">
       <div class="user-modal">
         <div class="modal-heading">
@@ -372,6 +380,7 @@
         </form>
       </div>
     </div>
+    <!-- Modal genérico para registros operativos. -->
     <div class="modal-backdrop" id="record-edit-modal" aria-hidden="true">
       <div class="user-modal">
         <div class="modal-heading">
