@@ -8,6 +8,11 @@ let alertFilter = "all";
 let alertSearch = "";
 let liveAlerts = [];
 let liveAlertSequence = 0;
+let activeView = "dashboard";
+const teamStateKey = "agrosmart-team-state";
+const teamChannel = "agrosmart-team-realtime";
+const teamClientId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const realtimeChannel = "BroadcastChannel" in window ? new BroadcastChannel(teamChannel) : null;
 // Perfiles disponibles y pantalla inicial asociada a cada rol.
 const roleProfiles = {
   admin: {
@@ -123,9 +128,9 @@ let managedWarehouses = [
 ];
 // Personas que participan en las actividades de campo.
 let managedTeam = [
-  { id: 1, name: "Carlos Méndez", role: "Supervisor de campo", phone: "300 555 0142" },
-  { id: 2, name: "Andrea Ruiz", role: "Técnica agrícola", phone: "300 555 0186" },
-  { id: 3, name: "Luis Gómez", role: "Operario de cultivo", phone: "300 555 0129" },
+  { id: 1, name: "Carlos Méndez", role: "Supervisor de campo", phone: "300 555 0142", status: "offline", lastSeen: "Sin actividad" },
+  { id: 2, name: "Andrea Ruiz", role: "Técnica agrícola", phone: "300 555 0186", status: "offline", lastSeen: "Sin actividad" },
+  { id: 3, name: "Luis Gómez", role: "Operario de cultivo", phone: "300 555 0129", status: "offline", lastSeen: "Sin actividad" },
 ];
 // Ventas registradas para el seguimiento comercial.
 let managedSales = [
@@ -140,6 +145,54 @@ let managedAudits = [
   { id: 3, user: "AgroSmart", action: "Sincronizó datos de sensores", date: "Ayer, 18:20" },
   { id: 4, user: "Mariana Ríos", action: "Creó una nueva tarea", date: "Ayer, 14:10" },
 ];
+
+// Recupera equipo y tareas compartidos entre pestañas del mismo dispositivo.
+function loadTeamState() {
+  try {
+    const savedState = JSON.parse(localStorage.getItem(teamStateKey));
+    if (Array.isArray(savedState?.team)) managedTeam = savedState.team;
+    if (Array.isArray(savedState?.tasks)) managedTasks = savedState.tasks;
+  } catch {
+    localStorage.removeItem(teamStateKey);
+  }
+}
+
+// Publica cambios inmediatamente y conserva una copia local para el respaldo.
+function publishTeamState() {
+  const state = { team: managedTeam, tasks: managedTasks, source: teamClientId };
+  localStorage.setItem(teamStateKey, JSON.stringify(state));
+  realtimeChannel?.postMessage({ type: "team-state", ...state });
+}
+
+// Aplica cambios recibidos por BroadcastChannel o por el evento de almacenamiento.
+function receiveTeamState(state) {
+  if (!state || state.source === teamClientId) return;
+  if (Array.isArray(state.team)) managedTeam = state.team;
+  if (Array.isArray(state.tasks)) managedTasks = state.tasks;
+  if (activeView === "team" || activeView === "tasks") updateTeamView(activeView);
+  showToast("Equipo actualizado en tiempo real");
+}
+
+// Actualiza la presencia del trabajador activo y la anuncia al resto de sesiones.
+function updateTeamPresence(status = "online") {
+  const profile = roleProfiles[activeRole];
+  const member = managedTeam.find((person) => person.name === profile?.name);
+  if (!member) return;
+  member.status = status;
+  member.lastSeen = status === "online" ? "En línea ahora" : "Última conexión ahora";
+  publishTeamState();
+  if (activeView === "team") updateTeamView("team");
+}
+
+realtimeChannel?.addEventListener("message", (event) => receiveTeamState(event.data));
+window.addEventListener("storage", (event) => {
+  if (event.key !== teamStateKey || !event.newValue) return;
+  try {
+    receiveTeamState(JSON.parse(event.newValue));
+  } catch {
+    // Ignora valores incompletos escritos por otra pestaña.
+  }
+});
 
 // Utilidades para construir iconos y paneles reutilizables en las vistas.
 const icon = (name) => `<i data-lucide="${name}"></i>`;
@@ -276,6 +329,7 @@ const views = {
 // Renderiza la pantalla solicitada y conecta sus controles dinámicos.
 function renderView(view = "dashboard") {
   const current = views[view] || views.dashboard;
+  activeView = view;
   breadcrumbTitle.textContent = current.title;
   viewContainer.innerHTML = current.render();
   if (view === "harvest") updateHarvestView();
@@ -412,6 +466,11 @@ function renderView(view = "dashboard") {
       el.addEventListener("click", () =>
         deleteEditableRecord(el.dataset.type, Number(el.dataset.id)),
       ),
+    );
+  document
+    .querySelectorAll('[data-action="complete-task"]')
+    .forEach((el) =>
+      el.addEventListener("click", () => completeTask(Number(el.dataset.id))),
     );
   document
     .querySelectorAll('[data-action="edit-user"]')
@@ -715,8 +774,11 @@ function updateTeamView(view) {
       "beforeend",
       managedTeam
         .map(
-          (person) =>
-            `<div class="metric-line"><span>${icon("user-round")} <strong>${person.name}</strong> <small style="color:var(--muted)"> · ${person.role} · ${person.phone}</small></span><span><button class="edit-btn" data-action="edit-team" data-id="${person.id}" title="Editar integrante">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="team" data-id="${person.id}" title="Eliminar integrante">${icon("trash-2")}</button></span></div>`,
+          (person) => {
+            const isOnline = person.status === "online";
+            const presenceLabel = isOnline ? "En línea ahora" : person.lastSeen || "Sin actividad";
+            return `<div class="metric-line"><span>${icon("user-round")} <strong>${person.name}</strong> <small style="color:var(--muted)"> · ${person.role} · ${person.phone}</small><span class="team-presence ${isOnline ? "online" : "offline"}"><span class="status-dot ${isOnline ? "synced" : "red"}"></span>${presenceLabel}</span></span><span><button class="edit-btn" data-action="edit-team" data-id="${person.id}" title="Editar integrante">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="team" data-id="${person.id}" title="Eliminar integrante">${icon("trash-2")}</button></span></div>`;
+          },
         )
         .join(""),
     );
@@ -728,7 +790,7 @@ function updateTeamView(view) {
     taskList.innerHTML = managedTasks
       .map(
         (task) =>
-          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span><button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
+          `<div class="metric-line"><span>${icon(task.status === "Completada" ? "check-circle-2" : "circle")} ${task.text} <small style="color:var(--muted)"> · ${task.person}</small></span><span><span class="stage ${task.tone}">${task.status === "Completada" ? icon("check") : ""}${task.status}</span>${task.status !== "Completada" ? `<button class="edit-btn" data-action="complete-task" data-id="${task.id}" title="Marcar tarea completada">${icon("check")}</button>` : ""}<button class="edit-btn" data-action="edit-task" data-id="${task.id}" title="Editar tarea">${icon("pencil")}</button><button class="delete-btn" data-action="delete-record" data-type="tasks" data-id="${task.id}" title="Eliminar tarea">${icon("trash-2")}</button></span></div>`,
       )
       .join("");
     return;
@@ -743,6 +805,17 @@ function updateTeamView(view) {
     )
     .join(""),
   );
+}
+
+// Marca una tarea como completada y propaga el cambio a las demás sesiones.
+function completeTask(id) {
+  const task = managedTasks.find((item) => item.id === id);
+  if (!task) return;
+  task.status = "Completada";
+  task.tone = "seed";
+  publishTeamState();
+  renderView(activeView === "team" ? "team" : "tasks");
+  showToast("Tarea completada y sincronizada");
 }
 // Actualiza la tabla de ventas y añade sus acciones de edición.
 function updateSalesView() {
@@ -899,6 +972,7 @@ function saveRecordEdit(event) {
     task.tone = task.status === "Completada" ? "seed" : task.status === "Pendiente" ? "harvest" : "develop";
   }
   if (type === "supplies" && record) record.updated = "Ahora";
+  if (type === "team" || type === "tasks") publishTeamState();
   closeRecordEditModal();
   const view = type === "warehouse" ? "inventory" : type === "supplies" ? "supplies" : type;
   renderView(view);
@@ -920,6 +994,7 @@ function deleteEditableRecord(type, id) {
   if (!record || !confirm(`¿Eliminar este registro: ${label}?`)) return;
   const index = collection.indexOf(record);
   collection.splice(index, 1);
+  if (type === "team" || type === "tasks") publishTeamState();
   const view = type === "warehouse" ? "inventory" : type === "supplies" ? "supplies" : type;
   renderView(view);
   showToast("Registro eliminado");
@@ -1218,6 +1293,7 @@ function startSession(role) {
 }
 // Cierra la sesión local y devuelve al acceso.
 function logout() {
+  updateTeamPresence("offline");
   localStorage.removeItem("agrosmart-role");
   window.location.href = "login.html";
 }
@@ -1273,7 +1349,8 @@ document.addEventListener("click", (event) => {
   )
     closeRoleMenu();
 });
-// Recupera el último rol y tema usados para conservar la experiencia offline.
+// Recupera datos compartidos, rol y tema para conservar la experiencia offline.
+loadTeamState();
 const storedRole = localStorage.getItem("agrosmart-role");
 if (storedRole && roleProfiles[storedRole]) activeRole = storedRole;
 const initialProfile = roleProfiles[activeRole];
@@ -1296,6 +1373,8 @@ if (routeRole && roleProfiles[routeRole]) {
   startSession(routeRole);
   document.querySelector("#auth-screen")?.remove();
 }
+updateTeamPresence("online");
+setInterval(() => updateTeamPresence("online"), 15000);
 // Alterna el tema y lo comparte con la pantalla de inicio.
 function toggleTheme() {
   const isDark = document.body.classList.toggle("dark");
