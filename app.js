@@ -215,6 +215,52 @@ const icon = (name) => `<i data-lucide="${name}"></i>`;
 const surface = (title, content, action = "") =>
   `<section class="surface"><div class="surface-header"><h2>${title}</h2>${action}</div>${content}</section>`;
 
+// Devuelve el nombre del mes actual con formato legible para el calendario.
+function currentCalendarMonthLabel() {
+  const label = new Date().toLocaleDateString("es-CO", {
+    month: "long",
+    year: "numeric",
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+// Construye una cuadrícula real y marca siempre la fecha del sistema como today.
+function renderCalendarGrid() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const currentDay = today.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+  const previousMonthDays = new Date(year, month, 0).getDate();
+  const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+  const weekdays = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
+  const headers = weekdays.map((day) => `<div class="day-name">${day}</div>`).join("");
+  const days = Array.from({ length: cellCount }, (_, index) => {
+    const dayNumber = index - firstWeekday + 1;
+    const isPreviousMonth = dayNumber < 1;
+    const isNextMonth = dayNumber > daysInMonth;
+    const visibleDay = isPreviousMonth
+      ? previousMonthDays + dayNumber
+      : isNextMonth
+        ? dayNumber - daysInMonth
+        : dayNumber;
+    const eventMarkup = managedCalendarEvents
+      .filter((event) => event.day === dayNumber && !isPreviousMonth && !isNextMonth)
+      .map((event) => `<div class="event ${event.tone}">${event.label}</div>`)
+      .join("");
+    const classes = [
+      "day",
+      isPreviousMonth || isNextMonth ? "muted" : "",
+      dayNumber === currentDay ? "today" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return `<div class="${classes}"><span class="day-number">${visibleDay}</span>${eventMarkup}</div>`;
+  }).join("");
+  return `${headers}${days}`;
+}
+
 // Cada vista devuelve el HTML de una pantalla y se actualiza desde renderView.
 const views = {
   "users-management": {
@@ -269,19 +315,9 @@ const views = {
   calendar: {
     title: "Calendario",
     render: () =>
-      `<div class="page"><div class="page-heading"><div><p class="eyebrow">Planificación de finca</p><h1>Calendario agrícola</h1><p class="page-subtitle">Septiembre 2024 · ${managedCalendarEvents.length} actividades programadas</p></div><button class="primary-btn" data-action="new-calendar-event">${icon("plus")} Nueva actividad</button></div>${surface(
-        "Septiembre 2024",
-        `<div class="calendar-grid"><div class="day-name">LUN</div><div class="day-name">MAR</div><div class="day-name">MIÉ</div><div class="day-name">JUE</div><div class="day-name">VIE</div><div class="day-name">SÁB</div><div class="day-name">DOM</div>${Array.from(
-          { length: 35 },
-          (_, i) => {
-            const n = i - 1;
-            const event = managedCalendarEvents
-              .filter((item) => item.day === n)
-              .map((item) => `<div class="event ${item.tone}">${item.label}</div>`)
-              .join("");
-            return `<div class="day ${n < 1 ? "muted" : ""} ${n === 24 ? "today" : ""}"><span class="day-number">${n < 1 ? 30 + i : n > 30 ? n - 30 : n}</span>${event}</div>`;
-          },
-        ).join("")}</div>`,
+      `<div class="page"><div class="page-heading"><div><p class="eyebrow">Planificación de finca</p><h1>Calendario agrícola</h1><p class="page-subtitle">${currentCalendarMonthLabel()} · ${managedCalendarEvents.length} actividades programadas</p></div><button class="primary-btn" data-action="new-calendar-event">${icon("plus")} Nueva actividad</button></div>${surface(
+        currentCalendarMonthLabel(),
+        `<div class="calendar-grid">${renderCalendarGrid()}</div>`,
       )}</div>`,
   },
   supplies: {
