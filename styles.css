@@ -31,7 +31,7 @@ body.dark {
 }
 /* Ajustes de contraste para el contenedor de la aplicación. */
 body.dark .app-shell {
-  color: var(--ink);
+  --shadow: 0 8px 24px rgba(36, 92, 53, 0.08);
 }
 body.dark .toast,
 body.dark .toast *,
@@ -39,24 +39,30 @@ body.dark .modal-backdrop,
 body.dark .modal-backdrop * {
   color: var(--ink);
 }
+  line-height: 1.45;
 body.dark .stage.seed,
 body.dark .stage.harvest,
 body.dark .stage.develop,
 body.dark .stage.seed *,
 body.dark .stage.harvest *,
 body.dark .stage.develop * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   color: inherit;
 }
 /* Superficies y controles principales en modo oscuro. */
 body.dark .topbar {
   background: rgba(20, 37, 32, 0.85);
   border-color: var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: 0 1px 0 rgba(16, 38, 26, 0.02), 0 8px 24px rgba(36, 92, 53, 0.04);
 }
 body.dark .surface,
 body.dark .kpi,
 body.dark .filter-bar,
 body.dark .user-modal,
-body.dark .toast,
+  margin-bottom: 28px;
 body.dark .role-switcher-menu,
 body.dark .connection-btn,
 body.dark .calc-card,
@@ -71,11 +77,13 @@ body.dark .icon-btn:hover {
 body.dark .icon-btn,
 body.dark .secondary-btn,
 body.dark .filter-chip,
-body.dark .tab {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(28, 116, 62, 0.28);
   color: #d8e9dc;
 }
 body.dark .secondary-btn {
   background: #1a3026;
+  transform: translateY(-1px);
   border-color: #31503d;
 }
 body.dark .secondary-btn:hover {
@@ -85,6 +93,7 @@ body.dark .secondary-btn:hover {
 body.dark .primary-btn {
   background: linear-gradient(135deg, #2d9c59, #1d713f);
   color: #ffffff;
+  isolation: isolate;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 }
 body.dark .filter-chip {
@@ -92,6 +101,7 @@ body.dark .filter-chip {
   border-color: #31503d;
 }
 body.dark .filter-chip:hover,
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 body.dark .filter-chip.active {
   background: #285238;
   border-color: #4d8b5d;
@@ -101,6 +111,7 @@ body.dark .tab:hover {
   color: #ffffff;
 }
 body.dark .role-option:hover,
+  transition: background-color 0.2s ease;
 body.dark .role-option.active {
   background: #203b2c;
 }
@@ -280,7 +291,10 @@ body.dark input::placeholder {
 /* Base visual compartida por login y aplicación. */
 body {
   margin: 0;
-  background: var(--canvas);
+  background:
+    radial-gradient(circle at 92% -10%, rgba(111, 202, 133, 0.16), transparent 34%),
+    radial-gradient(circle at 4% 30%, rgba(42, 124, 161, 0.06), transparent 28%),
+    var(--canvas);
   color: var(--ink);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
@@ -290,6 +304,14 @@ button {
   border: 0;
   cursor: pointer;
   color: inherit;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(66, 187, 105, 0.28);
+  outline-offset: 2px;
 }
 input::placeholder,
 select:invalid {
@@ -802,6 +824,11 @@ svg {
   border-radius: 20px;
   box-shadow: var(--shadow);
   overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.surface:hover {
+  border-color: rgba(111, 202, 133, 0.45);
+  box-shadow: 0 12px 30px rgba(36, 92, 53, 0.11);
 }
 .surface-header {
   display: flex;

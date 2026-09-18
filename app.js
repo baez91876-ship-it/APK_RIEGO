@@ -1386,7 +1386,6 @@ lucide.createIcons();
 const routeRole = new URLSearchParams(location.search).get("role");
 if (routeRole && roleProfiles[routeRole]) {
   startSession(routeRole);
-  document.querySelector("#auth-screen")?.remove();
 }
 updateTeamPresence("online");
 setInterval(() => updateTeamPresence("online"), 15000);
