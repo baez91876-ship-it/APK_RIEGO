@@ -169,6 +169,7 @@ function receiveTeamState(state) {
   if (!state || state.source === teamClientId) return;
   if (Array.isArray(state.team)) managedTeam = state.team;
   if (Array.isArray(state.tasks)) managedTasks = state.tasks;
+  if (activeView === "dashboard") updateDashboardTeamSummary();
   if (activeView === "team" || activeView === "tasks") updateTeamView(activeView);
   showToast("Equipo actualizado en tiempo real");
 }
@@ -181,6 +182,7 @@ function updateTeamPresence(status = "online") {
   member.status = status;
   member.lastSeen = status === "online" ? "En línea ahora" : "Última conexión ahora";
   publishTeamState();
+  if (activeView === "dashboard") updateDashboardTeamSummary();
   if (activeView === "team") updateTeamView("team");
 }
 
@@ -227,7 +229,7 @@ const views = {
       () => `<div class="page"><div class="page-heading"><div><p class="eyebrow">Martes, 24 de septiembre de 2024</p><h1>Buenos días, Mariana <span style="font-size:22px">☀</span></h1><p class="page-subtitle">Aquí tienes lo más importante de tu finca para hoy.</p></div><div class="page-actions"><button class="secondary-btn" data-action="export-dashboard">${icon("download")} Exportar</button><button class="primary-btn" data-view="new-crop">${icon("plus")} Nuevo cultivo</button></div></div>
       <div class="kpi-grid"><div class="kpi green"><div class="kpi-icon">${icon("leaf")}</div><span class="kpi-label">Cultivos activos</span><strong>12</strong><div class="kpi-foot">↑ 2 este mes · 86% saludables</div></div><div class="kpi blue"><div class="kpi-icon">${icon("bell-ring")}</div><span class="kpi-label">Alertas activas</span><strong>04</strong><div class="kpi-foot">2 requieren atención hoy</div></div><div class="kpi gold"><div class="kpi-icon">${icon("calendar-check-2")}</div><span class="kpi-label">Próxima cosecha</span><strong>18 <small style="font-size:15px;letter-spacing:0">días</small></strong><div class="kpi-foot">Café · Lote Norte 03</div></div></div>
       <div class="content-grid"><div>${surface("Alertas recientes", `<div class="alert-list"><div class="alert-row"><div class="alert-mark red"></div><div class="alert-copy"><strong>Humedad crítica en Lote Norte 03</strong><p>Sensor H-024 · Lectura de 24% en suelo</p><span class="type-pill red">Alta · Humedad</span></div><span class="alert-time">Hace 12 min</span></div><div class="alert-row"><div class="alert-mark amber"></div><div class="alert-copy"><strong>Posible brote de roya</strong><p>Reportado por Carlos M. · Café arábica</p><span class="type-pill amber">Media · Plaga</span></div><span class="alert-time">Hace 1 h</span></div><div class="alert-row"><div class="alert-mark green"></div><div class="alert-copy"><strong>Lluvia esperada en las próximas 24 h</strong><p>Pronóstico actualizado para la finca</p><span class="type-pill blue">Info · Clima</span></div><span class="alert-time">Hace 3 h</span></div></div>`, '<a href="#" data-view="alerts">Ver todas →</a>')}</div><div>${surface("Estado de la finca", `<div class="mini-chart"><div class="bar" style="height:42%"><span>Lun</span></div><div class="bar" style="height:65%"><span>Mar</span></div><div class="bar active" style="height:82%"><span>Mié</span></div><div class="bar" style="height:57%"><span>Jue</span></div><div class="bar" style="height:73%"><span>Vie</span></div><div class="bar" style="height:47%"><span>Sáb</span></div><div class="bar" style="height:35%"><span>Dom</span></div></div><div class="metric-line"><span>Humedad promedio</span><strong>68%</strong></div><div class="metric-line"><span>Riego completado</span><strong style="color:var(--green)">92%</strong></div>`, '<span class="small-note">Esta semana</span>')}</div></div>
-      <div class="content-grid" style="margin-top:20px"><div>${surface("Cultivos en seguimiento", `<div class="crop-list"><div class="crop-item"><div class="crop-orb">${icon("coffee")}</div><div><strong>Café arábica · Lote Norte 03</strong><small>Floración · 2.4 ha</small><div class="progress-track"><span style="width:68%"></span></div></div><span class="crop-pct">68%</span></div><div class="crop-item"><div class="crop-orb corn">${icon("wheat")}</div><div><strong>Maíz amarillo · Lote Sur 01</strong><small>Desarrollo · 1.8 ha</small><div class="progress-track"><span style="width:42%"></span></div></div><span class="crop-pct">42%</span></div><div class="crop-item"><div class="crop-orb coffee">${icon("sprout")}</div><div><strong>Aguacate Hass · Lote Este 02</strong><small>Cuajado · 3.1 ha</small><div class="progress-track"><span style="width:81%"></span></div></div><span class="crop-pct">81%</span></div></div>`, '<a href="#" data-view="crops">Ver cultivos →</a>')}</div><div>${surface("Equipo en campo", `<div class="metric-line"><span>${icon("users-round")} Personal activo</span><strong>08 / 10</strong></div><div class="metric-line"><span>${icon("check-check")} Tareas de hoy</span><strong>14 / 18</strong></div><div class="metric-line"><span>${icon("clock-3")} Sin asignar</span><strong style="color:var(--amber)">04</strong></div>`, '<a href="#" data-view="team">Gestionar</a>')}</div></div>
+      <div class="content-grid" style="margin-top:20px"><div>${surface("Cultivos en seguimiento", `<div class="crop-list"><div class="crop-item"><div class="crop-orb">${icon("coffee")}</div><div><strong>Café arábica · Lote Norte 03</strong><small>Floración · 2.4 ha</small><div class="progress-track"><span style="width:68%"></span></div></div><span class="crop-pct">68%</span></div><div class="crop-item"><div class="crop-orb corn">${icon("wheat")}</div><div><strong>Maíz amarillo · Lote Sur 01</strong><small>Desarrollo · 1.8 ha</small><div class="progress-track"><span style="width:42%"></span></div></div><span class="crop-pct">42%</span></div><div class="crop-item"><div class="crop-orb coffee">${icon("sprout")}</div><div><strong>Aguacate Hass · Lote Este 02</strong><small>Cuajado · 3.1 ha</small><div class="progress-track"><span style="width:81%"></span></div></div><span class="crop-pct">81%</span></div></div>`, '<a href="#" data-view="crops">Ver cultivos →</a>')}</div><div>${surface("Equipo en campo", `<div class="metric-line"><span>${icon("users-round")} Personal activo</span><strong id="team-active-count">0 / ${managedTeam.length}</strong></div><div class="metric-line"><span>${icon("check-check")} Tareas de hoy</span><strong id="team-tasks-count">0 / ${managedTasks.length}</strong></div><div class="metric-line"><span>${icon("clock-3")} Sin asignar</span><strong id="team-unassigned-count" style="color:var(--amber)">0</strong></div>`, '<a href="#" data-view="team">Gestionar</a>')}</div></div>
     </div>`,
   },
   alerts: {
@@ -333,6 +335,7 @@ function renderView(view = "dashboard") {
   breadcrumbTitle.textContent = current.title;
   viewContainer.innerHTML = current.render();
   if (view === "harvest") updateHarvestView();
+  if (view === "dashboard") updateDashboardTeamSummary();
   if (view === "alerts") updateAlertsView();
   if (view === "inventory" || view === "supplies") updateInventoryView(view);
   if (view === "team" || view === "tasks") updateTeamView(view);
@@ -516,6 +519,18 @@ function renderView(view = "dashboard") {
     );
   bindRoleControls();
   lucide.createIcons();
+}
+// Actualiza los indicadores del equipo en el resumen sin recargar la página.
+function updateDashboardTeamSummary() {
+  const activeCount = managedTeam.filter((person) => person.status === "online").length;
+  const completedCount = managedTasks.filter((task) => task.status === "Completada").length;
+  const unassignedCount = managedTasks.filter((task) => !task.person || task.person === "Sin asignar").length;
+  const activeLabel = document.querySelector("#team-active-count");
+  const tasksLabel = document.querySelector("#team-tasks-count");
+  const unassignedLabel = document.querySelector("#team-unassigned-count");
+  if (activeLabel) activeLabel.textContent = `${String(activeCount).padStart(2, "0")} / ${managedTeam.length}`;
+  if (tasksLabel) tasksLabel.textContent = `${completedCount} / ${managedTasks.length}`;
+  if (unassignedLabel) unassignedLabel.textContent = String(unassignedCount).padStart(2, "0");
 }
 // Conecta filtros y pestañas de la pantalla de cultivos.
 function bindCropTabs() {
