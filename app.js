@@ -254,7 +254,10 @@ function renderCalendarGrid() {
           !isPreviousMonth &&
           !isNextMonth,
       )
-      .map((event) => `<div class="event ${event.tone}">${event.label}</div>`)
+      .map(
+        (event) =>
+          `<div class="event ${event.tone}"><span>${event.label}</span><button type="button" class="calendar-event-delete" data-action="delete-calendar-event" data-id="${event.id}" title="Eliminar actividad" aria-label="Eliminar actividad">${icon("x")}</button></div>`,
+      )
       .join("");
     const classes = [
       "day",
@@ -419,6 +422,11 @@ function renderView(view = "dashboard") {
   document
     .querySelectorAll('[data-action="new-calendar-event"]')
     .forEach((el) => el.addEventListener("click", openCalendarModal));
+  document
+    .querySelectorAll('[data-action="delete-calendar-event"]')
+    .forEach((el) =>
+      el.addEventListener("click", () => deleteCalendarEvent(Number(el.dataset.id))),
+    );
   document
     .querySelectorAll('[data-action="export-dashboard"]')
     .forEach((el) => el.addEventListener("click", exportDashboard));
@@ -621,6 +629,16 @@ function saveCalendarEvent(event) {
   closeCalendarModal();
   renderView("calendar");
   showToast("Actividad sincronizada en tiempo real");
+}
+
+// Elimina una actividad y notifica el cambio a las demás sesiones.
+function deleteCalendarEvent(id) {
+  const calendarEvent = managedCalendarEvents.find((event) => event.id === id);
+  if (!calendarEvent || !confirm(`¿Eliminar la actividad "${calendarEvent.label}"?`)) return;
+  managedCalendarEvents = managedCalendarEvents.filter((event) => event.id !== id);
+  publishTeamState();
+  renderView("calendar");
+  showToast("Actividad eliminada y sincronizada");
 }
 // Conecta filtros y pestañas de la pantalla de cultivos.
 function bindCropTabs() {
