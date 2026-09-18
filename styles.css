@@ -1132,6 +1132,17 @@ svg {
 .metric-line span {
   color: var(--muted);
 }
+.metric-line > span:first-child {
+  min-width: 0;
+}
+.metric-line > span:last-child {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: none;
+  white-space: nowrap;
+}
 .metric-line strong {
   font-weight: 700;
 }
@@ -1193,6 +1204,9 @@ svg {
   border-radius: 8px;
   font-size: 9px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 .stage.develop {
   color: #247298;
