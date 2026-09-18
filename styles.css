@@ -39,14 +39,12 @@ body.dark .modal-backdrop,
 body.dark .modal-backdrop * {
   color: var(--ink);
 }
-  line-height: 1.45;
 body.dark .stage.seed,
 body.dark .stage.harvest,
 body.dark .stage.develop,
 body.dark .stage.seed *,
 body.dark .stage.harvest *,
 body.dark .stage.develop * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   color: inherit;
 }
 /* Superficies y controles principales en modo oscuro. */
@@ -62,7 +60,6 @@ body.dark .surface,
 body.dark .kpi,
 body.dark .filter-bar,
 body.dark .user-modal,
-  margin-bottom: 28px;
 body.dark .role-switcher-menu,
 body.dark .connection-btn,
 body.dark .calc-card,
@@ -76,9 +73,7 @@ body.dark .icon-btn:hover {
 }
 body.dark .icon-btn,
 body.dark .secondary-btn,
-body.dark .filter-chip,
-  transform: translateY(-2px);
-  box-shadow: 0 9px 20px rgba(28, 116, 62, 0.28);
+body.dark .filter-chip {
   color: #d8e9dc;
 }
 body.dark .secondary-btn {
@@ -100,8 +95,11 @@ body.dark .filter-chip {
   background: #172a22;
   border-color: #31503d;
 }
-body.dark .filter-chip:hover,
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+body.dark .filter-chip:hover {
+  background: #285238;
+  border-color: #4d8b5d;
+  color: #e5f8e8;
+}
 body.dark .filter-chip.active {
   background: #285238;
   border-color: #4d8b5d;
@@ -111,7 +109,6 @@ body.dark .tab:hover {
   color: #ffffff;
 }
 body.dark .role-option:hover,
-  transition: background-color 0.2s ease;
 body.dark .role-option.active {
   background: #203b2c;
 }
@@ -198,6 +195,15 @@ body.dark .delete-btn:hover {
 body.dark .alert-row:hover {
   background: #182f24;
 }
+body.dark .alert-copy p {
+  color: #a8bcae;
+}
+body.dark .alert-time {
+  color: #9bb5a4;
+}
+body.dark .alert-row.read {
+  opacity: 0.78;
+}
 body.dark .alert-read-control {
   border-color: #3c6549;
   background: #21432e;
@@ -211,6 +217,25 @@ body.dark .alert-read-control[data-action="mark-alert-unread"] {
   border-color: #7e4640;
   background: #402522;
   color: #ffd4ce;
+}
+body.dark .filter-search {
+  color: #e1f0e4;
+}
+body.dark .filter-search::placeholder {
+  color: #8ea99a;
+  opacity: 1;
+}
+body.dark .type-pill.red {
+  background: #4b2825;
+  color: #ffb5aa;
+}
+body.dark .type-pill.amber {
+  background: #4a3820;
+  color: #ffd58b;
+}
+body.dark .type-pill.blue {
+  background: #1d3d4c;
+  color: #a9dff2;
 }
 /* Componentes de autenticación en modo oscuro. */
 body.dark .auth-card {
