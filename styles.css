@@ -925,6 +925,7 @@ svg {
 }
 .alert-copy {
   flex: 1;
+  min-width: 0;
 }
 .alert-copy strong {
   font-size: 11px;
@@ -1196,6 +1197,9 @@ svg {
   padding: 8px 10px;
   font-size: 10px;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .filter-chip.active {
   background: #e8f6ea;
@@ -1752,6 +1756,37 @@ svg {
   }
   .content-grid {
     gap: 14px;
+  }
+  .filter-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .filter-bar .filter-search {
+    flex: 1 1 100%;
+    min-width: 0;
+    order: -1;
+  }
+  .filter-bar .filter-chip {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+  .alert-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 11px 8px;
+  }
+  .alert-mark {
+    flex: none;
+  }
+  .alert-time {
+    margin-left: auto;
+  }
+  .alert-actions {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    padding-left: 16px;
   }
   .calendar-grid {
     padding: 0 10px 13px;

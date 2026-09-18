@@ -752,6 +752,7 @@ function updateAlertsView() {
     markAllButton.innerHTML = `${icon("check-check")} Marcar todas como leídas`;
   }
   rows.forEach((row, index) => {
+    row.querySelector(".alert-actions")?.remove();
     row.dataset.alertIndex = index;
     row.classList.toggle("read", readAlerts.has(index));
     row.insertAdjacentHTML(
