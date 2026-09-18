@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b2115" />
+    <!-- El rol se valida antes de pintar la aplicación para proteger la ruta inicial. -->
+    <script>
+      const role = new URLSearchParams(location.search).get("role");
+      if (!["admin", "superAdmin", "usuario"].includes(role)) {
+        location.replace("login.html");
+      }
+    </script>
+    <title>AgroSmart | Gestión agropecuaria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+      rel="preload"
+      as="script"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Pantalla de acceso embebida para mantener el flujo offline. -->
+    <section
+      class="auth-screen"
+      id="auth-screen"
+      data-screen="login"
+      aria-hidden="false"
+    >
+      <div class="auth-brand">
+        <span class="brand-mark"><i data-lucide="sprout"></i></span
+        ><span>agro<span class="brand-accent">smart</span></span>
+      </div>
+      <div class="auth-layout">
+        <div class="auth-intro">
+          <p class="eyebrow">GESTIÓN AGROPECUARIA INTEGRAL</p>
+          <h1>Tecnología para<br /><span>el campo colombiano</span></h1>
+          <p>
+            Plataforma offline-first diseñada para zonas rurales con
+            conectividad limitada. Gestiona cultivos, alertas y personal desde
+            cualquier lugar.
+          </p>
+          <div class="auth-proof">
+            <span><i data-lucide="cloud-off"></i></span>
+            <div>
+              <strong>Offline-first</strong
+              ><small>Tu información permanece contigo</small>
+            </div>
+          </div>
+        </div>
+        <div class="auth-card">
+          <button
+            class="icon-btn auth-theme-btn"
+            data-action="toggle-theme"
+            title="Cambiar tema"
+          >
+            <i data-lucide="moon"></i>
+          </button>
+          <p class="eyebrow">AGROSMART</p>
+          <h2>Bienvenido de nuevo</h2>
+          <p class="auth-description">
+            Seleccione su rol e ingrese sus credenciales
+          </p>
+          <div class="auth-role-list">
+            <button type="button" class="auth-role active" data-auth-role="admin">
+              <span class="role-avatar admin-avatar">MR</span
+              ><span
+                ><strong>Administrador de Finca</strong
+                ><small
+                  >Gestión de cultivos, personal y operaciones</small
+                ></span
+              ><i data-lucide="check"></i></button
+            ><button type="button" class="auth-role" data-auth-role="superAdmin">
+              <span class="role-avatar super-avatar">AG</span
+              ><span
+                ><strong>SuperAdmin</strong
+                ><small>Administración global del sistema</small></span
+              ><i data-lucide="shield-check"></i></button
+            ><button type="button" class="auth-role" data-auth-role="usuario">
+              <span class="role-avatar field-avatar">CM</span
+              ><span
+                ><strong>Trabajador de Campo</strong
+                ><small>Registro de actividades y tareas diarias</small></span
+              ><i data-lucide="hard-hat"></i>
+            </button>
+          </div>
+          <label class="auth-field"
+            >CORREO ELECTRÓNICO<input
+              type="email"
+              autocomplete="email"
+              placeholder="tu@finca.com" /></label
+          ><label class="auth-field"
+            >CONTRASEÑA<input
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password" /></label
+          ><button type="button" class="primary-btn auth-submit" data-action="login">
+            Ingresar al sistema <i data-lucide="arrow-right"></i></button
+          ><small class="auth-note"
+            >Acceso detectado en este dispositivo · listo para trabajar sin
+            conexión</small
+          >
+        </div>
+      </div>
+      <div class="auth-footer">
+        <span>© 2024 AgroSmart</span><span>Privacidad · Soporte · v2.4.0</span>
+      </div>
+    </section>
+    <!-- Contenedor principal: app.js inyecta aquí la vista activa. -->
+    <div
+      class="app-shell app-hidden"
+      id="app-screen"
+      data-screen="app"
+      aria-hidden="true"
+    >
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark"><i data-lucide="sprout"></i></span
+          ><span>agro<span class="brand-accent">smart</span></span>
+        </div>
+        <div class="workspace-label">ESPACIO DE TRABAJO</div>
+        <div class="farm-switcher">
+          <div class="farm-icon"><i data-lucide="wheat"></i></div>
+          <div>
+            <strong>Finca El Porvenir</strong
+            ><small>Antioquia · Colombia</small>
+          </div>
+          <i class="chevron" data-lucide="chevrons-up-down"></i>
+        </div>
+        <nav class="main-nav">
+          <button class="nav-item active" data-view="dashboard">
+            <i data-lucide="layout-dashboard"></i><span>Resumen</span><b>⌘ 1</b>
+          </button>
+          <button class="nav-item" data-view="crops">
+            <i data-lucide="leaf"></i><span>Cultivos</span><b>12</b>
+          </button>
+          <button class="nav-item" data-view="alerts">
+            <i data-lucide="bell-ring"></i><span>Alertas</span
+            ><b class="nav-count">4</b>
+          </button>
+          <button class="nav-item" data-view="calendar">
+            <i data-lucide="calendar-days"></i><span>Calendario</span>
+          </button>
+          <div class="nav-section">OPERACIÓN</div>
+          <button class="nav-item" data-view="inventory">
+            <i data-lucide="warehouse"></i><span>Bodega</span>
+          </button>
+          <button class="nav-item" data-view="supplies">
+            <i data-lucide="package-check"></i><span>Insumos</span>
+          </button>
+          <button class="nav-item" data-view="team">
+            <i data-lucide="users-round"></i><span>Equipo</span>
+          </button>
+          <button class="nav-item" data-view="tasks">
+            <i data-lucide="list-checks"></i><span>Tareas</span>
+          </button>
+          <button class="nav-item" data-view="harvest">
+            <i data-lucide="shopping-basket"></i><span>Cosecha</span>
+          </button>
+          <button class="nav-item" data-view="sales">
+            <i data-lucide="badge-dollar-sign"></i><span>Ventas</span>
+          </button>
+          <div class="nav-section">SISTEMA</div>
+          <button class="nav-item" data-view="audit">
+            <i data-lucide="file-clock"></i><span>Auditoría</span>
+          </button>
+          <button class="nav-item" data-view="settings">
+            <i data-lucide="settings-2"></i><span>Configuración</span>
+          </button>
+          <button class="nav-item" data-view="management">
+            <i data-lucide="shield-check"></i><span>Gestión global</span>
+          </button>
+          <button class="nav-item" data-view="users-management">
+            <i data-lucide="users-round"></i><span>Usuarios</span>
+          </button>
+          <button class="nav-item" data-view="crops-management">
+            <i data-lucide="sprout"></i><span>Catálogo de cultivos</span>
+          </button>
+          <button class="nav-item" data-action="logout">
+            <i data-lucide="log-out"></i><span>Cerrar sesión</span>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="sync-card">
+            <div class="sync-top">
+              <span class="status-dot synced"></span
+              ><span>Todo sincronizado</span><i data-lucide="cloud-check"></i>
+            </div>
+            <small>Última actualización hace 2 min</small>
+            <div class="sync-line"><span></span></div>
+          </div>
+          <button class="profile" data-action="toggle-role-menu">
+            <div class="avatar avatar-photo" id="sidebar-avatar">MR</div>
+            <div>
+              <strong id="sidebar-user-name">Mariana Ríos</strong
+              ><small id="sidebar-user-role">Administradora</small>
+            </div>
+            <i data-lucide="chevrons-up-down"></i>
+          </button>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb">
+            <span>Finca El Porvenir</span><i data-lucide="chevron-right"></i
+            ><strong id="breadcrumb-title">Resumen</strong>
+          </div>
+          <div class="top-actions">
+            <button class="icon-btn connection-btn" title="Estado de conexión">
+              <span class="status-dot synced"></span
+              ><span class="connection-label">Sincronizado</span></button
+            ><button class="icon-btn" title="Buscar">
+              <i data-lucide="search"></i></button
+            ><button
+              class="icon-btn theme-btn"
+              data-action="toggle-theme"
+              title="Cambiar tema"
+            >
+              <i data-lucide="moon"></i></button
+            ><button class="icon-btn notification-btn" title="Notificaciones">
+              <i data-lucide="bell"></i><em></em></button
+            ><button
+              class="avatar avatar-photo top-avatar"
+              data-action="toggle-role-menu"
+              id="top-avatar"
+            >
+              MR
+            </button>
+          </div>
+        </header>
+        <div
+          class="role-switcher-menu"
+          id="role-switcher-menu"
+          aria-hidden="true"
+        >
+          <div class="role-menu-heading">
+            <span>CAMBIAR USUARIO</span
+            ><button data-action="close-role-menu">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <button class="role-option active" data-role="admin">
+            <span class="role-avatar admin-avatar">MR</span
+            ><span
+              ><strong>Mariana Ríos</strong
+              ><small>Administrador de finca</small></span
+            ><i data-lucide="check"></i></button
+          ><button class="role-option" data-role="superAdmin">
+            <span class="role-avatar super-avatar">AG</span
+            ><span
+              ><strong>Andrés Gómez</strong
+              ><small>Super administrador</small></span
+            ><i data-lucide="shield-check"></i></button
+          ><button class="role-option" data-role="usuario">
+            <span class="role-avatar field-avatar">CM</span
+            ><span
+              ><strong>Carlos Méndez</strong
+              ><small>Trabajador de campo</small></span
+            ><i data-lucide="hard-hat"></i>
+          </button>
+          <div class="role-menu-footer">
+            El cambio de usuario se guarda localmente
+          </div>
+        </div>
+        <div id="view-container"></div>
+      </main>
+    </div>
+    <div class="toast" id="toast">
+      <i data-lucide="check-circle-2"></i
+      ><span>Actividad guardada localmente</span>
+    </div>
+    <div class="modal-backdrop" id="user-modal" aria-hidden="true">
+      <div class="user-modal">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">ADMINISTRACIÓN DE ACCESOS</p>
+            <h2 id="user-modal-title">Nuevo usuario</h2>
+          </div>
+          <button class="modal-close" data-action="close-user-modal">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="user-form">
+          <label class="modal-field"
+            >Nombre completo<input
+              id="user-name-input"
+              required
+              placeholder="Ej. Laura Pérez" /></label
+          ><label class="modal-field"
+            >Correo electrónico<input
+              id="user-email-input"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="usuario@finca.com" /></label
+          ><label class="modal-field"
+            >Contraseña
+            <div class="password-control">
+              <input
+                id="user-password-input"
+                type="password"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Mínimo 6 caracteres"
+              /><button
+                type="button"
+                data-action="toggle-password"
+                title="Mostrar contraseña"
+              >
+                <i data-lucide="eye"></i>
+              </button></div></label
+          ><label class="modal-field"
+            >Rol de acceso<select id="user-role-input" required>
+              <option value="" selected disabled>Selecciona un rol</option>
+              <option value="superAdmin">SuperAdmin</option>
+              <option value="admin">Administrador de Finca</option>
+              <option value="usuario">Trabajador de Campo</option>
+            </select></label
+          ><label class="modal-field"
+            >Estado<select id="user-status-input" required>
+              <option value="" selected disabled>Selecciona un estado</option>
+              <option>Activo</option>
+              <option>Pendiente de activar</option>
+              <option>Bloqueado</option>
+            </select></label
+          >
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              data-action="close-user-modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="primary-btn">Guardar usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="modal-backdrop" id="harvest-modal" aria-hidden="true">
+      <div class="user-modal">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">REGISTRO DE PRODUCCIÓN</p>
+            <h2>Nueva cosecha</h2>
+          </div>
+          <button class="modal-close" data-action="close-harvest-modal">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="harvest-form">
+          <label class="modal-field">Fecha<input id="harvest-date-input" type="date" required /></label>
+          <label class="modal-field">Cultivo<input id="harvest-crop-input" required placeholder="Ej. Café arábica" /></label>
+          <label class="modal-field">Lote<input id="harvest-lot-input" required placeholder="Ej. Lote Norte 03" /></label>
+          <label class="modal-field">Cantidad<input id="harvest-quantity-input" required placeholder="Ej. 420 kg" /></label>
+          <label class="modal-field">Calidad<select id="harvest-quality-input" required>
+            <option value="" selected disabled>Selecciona una calidad</option>
+            <option>Premium</option>
+            <option>Exportación</option>
+            <option>Estándar</option>
+          </select></label>
+          <div class="modal-actions">
+            <button type="button" class="secondary-btn" data-action="close-harvest-modal">Cancelar</button>
+            <button type="submit" class="primary-btn">Guardar cosecha</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="modal-backdrop" id="record-edit-modal" aria-hidden="true">
+      <div class="user-modal">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow" id="record-edit-eyebrow">EDICIÓN</p>
+            <h2 id="record-edit-title">Editar registro</h2>
+          </div>
+          <button class="modal-close" data-action="close-record-edit" title="Cerrar">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="record-edit-form"></form>
+      </div>
+    </div>
+    <!-- Lucide transforma los placeholders data-lucide en iconos SVG. -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
+
