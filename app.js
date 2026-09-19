@@ -411,7 +411,7 @@ function renderView(view = "dashboard") {
         );
     });
   }
-  document.querySelectorAll("[data-view]").forEach((el) =>
+  viewContainer.querySelectorAll("[data-view]").forEach((el) =>
     el.addEventListener("click", (event) => {
       event.preventDefault();
       renderView(el.dataset.view);
